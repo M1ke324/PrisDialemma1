@@ -1089,7 +1089,7 @@ function initCompass() {
     compassY = (-(py - H/2) / (H/2 - PAD)).toFixed(2);
     draw(px, py);
     document.getElementById('compass-coords').textContent =
-      `Economica: ${compassX > 0 ? 'destra' : 'sinistra'} ${Math.abs(compassX)} · Sociale: ${compassY > 0 ? 'libertarismo' : 'autoritarismo'} ${Math.abs(compassY)}`;
+      `Economica: ${compassX > 0 ? 'destra' : 'sinistra'} ${Math.abs(compassX)} · Sociale: ${compassY < 0 ? 'libertarismo' : 'autoritarismo'} ${Math.abs(compassY)}`;
   }
 
   let dragging = false;
