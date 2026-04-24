@@ -1067,27 +1067,45 @@ function initCompass() {
     }
   }
 
-  function getPos(e, rect) {
-    let clientX, clientY;
-    if (e.touches) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
-    else { clientX = e.clientX; clientY = e.clientY; }
-    return {
-      x: Math.max(PAD, Math.min(W-PAD, clientX - rect.left)),
-      y: Math.max(PAD, Math.min(H-PAD, clientY - rect.top))
-    };
+function getPos(e, rect) {
+  let clientX, clientY;
+  if (e.touches && e.touches.length > 0) { 
+    clientX = e.touches[0].clientX; 
+    clientY = e.touches[0].clientY; 
+  } else { 
+    clientX = e.clientX; 
+    clientY = e.clientY; 
   }
-
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
   function handleMove(e) {
     e.preventDefault();
     const rect = canvas.getBoundingClientRect();
-    const scaleX = W / rect.width;
-    const scaleY = H / rect.height;
+    
+    // 1. Ottieni la posizione grezza in pixel CSS
     const raw = getPos(e, rect);
-    const px = raw.x * scaleX;
-    const py = raw.y * scaleY;
-    compassX = ((px - W/2) / (W/2 - PAD)).toFixed(2);
-    compassY = (-(py - H/2) / (H/2 - PAD)).toFixed(2);
+    
+    // 2. Converti in unità interne del canvas (0-280)
+    let px = raw.x * (W / rect.width);
+    let py = raw.y * (H / rect.height);
+
+    // 3. Applica il limite (clamp) all'interno dell'area utile (PAD to W-PAD)
+    px = Math.max(PAD, Math.min(W - PAD, px));
+    py = Math.max(PAD, Math.min(H - PAD, py));
+
+    // 4. Calcola le coordinate del compass (-1 a 1)
+    let calcX = (px - W / 2) / (W / 2 - PAD);
+    let calcY = -(py - H / 2) / (H / 2 - PAD);
+
+    // 5. SICUREZZA: Forza il valore nell'intervallo [-1, 1]
+    compassX = Math.max(-1, Math.min(1, calcX)).toFixed(2);
+    compassY = Math.max(-1, Math.min(1, calcY)).toFixed(2);
+
     draw(px, py);
+    
     document.getElementById('compass-coords').textContent =
       `Economica: ${compassX > 0 ? 'destra' : 'sinistra'} ${Math.abs(compassX)} · Sociale: ${compassY < 0 ? 'libertarismo' : 'autoritarismo'} ${Math.abs(compassY)}`;
   }
